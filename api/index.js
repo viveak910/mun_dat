@@ -1,11 +1,11 @@
-require("dotenv").config();
-
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const cors = require("cors");
 
 const app = express();
-const uri = process.env.MONGO_URI;
+
+const uri =
+  "mongodb+srv://bhanutejavaravenkatareddy:gmeyk55gg0Rwy7Nn@cluster0.erthl.mongodb.net/MUN?retryWrites=true&w=majority";
 
 app.use(express.json());
 app.use(cors());
@@ -13,7 +13,7 @@ app.use(cors());
 let db;
 let collection;
 
-MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+MongoClient.connect(uri)
   .then((client) => {
     console.log("Connected to MongoDB Atlas");
     db = client.db("MUN");
