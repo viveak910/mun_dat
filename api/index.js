@@ -1,11 +1,11 @@
-require("dotenv").config(); // Load environment variables from .env file
+require("dotenv").config();
 
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const cors = require("cors");
 
 const app = express();
-const uri = process.env.MONGO_URI; // Use the environment variable
+const uri = process.env.MONGO_URI;
 
 app.use(express.json());
 app.use(cors());
