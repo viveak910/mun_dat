@@ -22,6 +22,7 @@ MongoClient.connect(uri)
     console.error("Failed to connect to MongoDB Atlas", err);
   });
 
+// Route to insert registration data
 app.post("/registration", (req, res) => {
   const registrationData = req.body;
 
@@ -41,8 +42,27 @@ app.post("/registration", (req, res) => {
     });
 });
 
+// Route to read registration data
+app.get("/registrations", (req, res) => {
+  if (!collection) {
+    res.status(500).send("Database connection not established.");
+    return;
+  }
+
+  collection
+    .find({})
+    .toArray()
+    .then((registrations) => {
+      res.status(200).json(registrations);
+    })
+    .catch((error) => {
+      console.error("Error retrieving registration data", error);
+      res.status(500).send("Error retrieving registration data");
+    });
+});
+
 app.get("/advice", (req, res) => {
-  res.send("PPProbe around globe to lobe -Bhanu Teja");
+  res.send("Probe around globe to lobe - Bhanu Teja");
 });
 
 // Use environment port or default to 3000
