@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
 
-app.get("/invite", (req, res) => {
-  res.send("Hello Bhanu");
+app.get("/advice", (req, res) => {
+  res.send("Probe the lobe the globe \n -Bhanu Teja");
 });
 
 app.listen(3000, () => {
