@@ -49,7 +49,7 @@ app.get("/registrations", async (req, res) => {
 });
 
 // POST API endpoint to add a new registration
-app.post("/registrations", async (req, res) => {
+app.post("/register", async (req, res) => {
   try {
     const database = client.db("MUN");
     const registrationsCollection = database.collection("Registrations");
