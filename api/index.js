@@ -28,16 +28,13 @@ async function connectToMongoDB() {
 
 connectToMongoDB();
 
-// GET API endpoint to fetch all registrations
 app.get("/registrations", async (req, res) => {
   try {
     const database = client.db("MUN");
     const registrationsCollection = database.collection("Registrations");
 
-    // Fetch all documents from the Registrations collection
     const registrations = await registrationsCollection.find({}).toArray();
 
-    // Send the documents as a JSON response
     res.json(registrations);
   } catch (error) {
     console.error("Error fetching registrations:", error);
@@ -45,19 +42,13 @@ app.get("/registrations", async (req, res) => {
   }
 });
 
-// POST API endpoint to add a new registration
 app.post("/register", async (req, res) => {
   try {
     const database = client.db("MUN");
     const registrationsCollection = database.collection("Registrations");
-
-    // Extract new registration data from the request body
     const newRegistration = req.body;
-
-    // Insert the new registration into the collection
     const result = await registrationsCollection.insertOne(newRegistration);
 
-    // Send a response with the inserted document's ID
     res.status(201).json({
       message: "Registration added successfully",
       id: result.insertedId,
@@ -67,8 +58,4 @@ app.post("/register", async (req, res) => {
     res.status(500).send("Error adding registration");
   }
 });
-
-// Start the Express server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+app.listen(port, () => {});
