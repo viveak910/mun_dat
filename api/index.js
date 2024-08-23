@@ -1,74 +1,77 @@
 const express = require("express");
-const { MongoClient } = require("mongodb");
-const cors = require("cors");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const app = express();
-const uri =
-  "mongodb+srv://bhanutejavaravenkatareddy:gmeyk55gg0Rwy7Nn@cluster0.erthl.mongodb.net/MUN?retryWrites=true&w=majority";
+const port = 3000;
 
+// Middleware to parse JSON bodies
 app.use(express.json());
-app.use(cors());
 
-let db;
-let collection;
+// MongoDB connection URI
+const uri =
+  "mongodb+srv://bhanutejavaravenkatareddy:hU3uciRBIaMDvzXM@cluster0.erthl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-MongoClient.connect(uri)
-  .then((client) => {
-    console.log("Connected to MongoDB Atlas");
-    db = client.db("MUN");
-    collection = db.collection("Registrations");
-  })
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB Atlas", err);
-  });
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 
-// Route to insert registration data
-app.post("/registration", (req, res) => {
-  const registrationData = req.body;
-
-  if (!collection) {
-    res.status(500).send("Database connection not established.");
-    return;
+async function connectToMongoDB() {
+  try {
+    await client.connect();
+    console.log("Connected to MongoDB!");
+  } catch (error) {
+    console.error("Failed to connect to MongoDB", error);
   }
+}
 
-  collection
-    .insertOne(registrationData)
-    .then(() => {
-      res.status(201).send("Registration data saved successfully!");
-    })
-    .catch((error) => {
-      console.error("Error saving registration data", error);
-      res.status(500).send("Error saving registration data");
-    });
-});
+connectToMongoDB();
 
-// Route to read registration data
-app.get("/registrations", (req, res) => {
-  if (!collection) {
-    res.status(500).send("Database connection not established.");
-    return;
+// GET API endpoint to fetch all registrations
+app.get("/registrations", async (req, res) => {
+  try {
+    const database = client.db("MUN");
+    const registrationsCollection = database.collection("Registrations");
+
+    // Fetch all documents from the Registrations collection
+    const registrations = await registrationsCollection.find({}).toArray();
+
+    // Send the documents as a JSON response
+    res.json(registrations);
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).send("Error fetching registrations");
   }
+});
 
-  collection
-    .find({})
-    .toArray()
-    .then((registrations) => {
-      res.status(200).json(registrations);
-    })
-    .catch((error) => {
-      console.error("Error retrieving registration data", error);
-      res.status(500).send("Error retrieving registration data");
+// POST API endpoint to add a new registration
+app.post("/registrations", async (req, res) => {
+  try {
+    const database = client.db("MUN");
+    const registrationsCollection = database.collection("Registrations");
+
+    // Extract new registration data from the request body
+    const newRegistration = req.body;
+
+    // Insert the new registration into the collection
+    const result = await registrationsCollection.insertOne(newRegistration);
+
+    // Send a response with the inserted document's ID
+    res.status(201).json({
+      message: "Registration added successfully",
+      id: result.insertedId,
     });
+  } catch (error) {
+    console.error("Error adding registration:", error);
+    res.status(500).send("Error adding registration");
+  }
 });
 
-app.get("/advice", (req, res) => {
-  res.send("Probe around globe to lobe - Bhanu Teja");
-});
-
-// Use environment port or default to 3000
-const port = process.env.PORT || 3000;
+// Start the Express server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
-
-module.exports = app;
