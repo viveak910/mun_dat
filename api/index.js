@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 const uri =
-  "mongodb+srv://bhanutejavaravenkatareddy:hU3uciRBIaMDvzXM@cluster0.erthl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "";
 
 const client = new MongoClient(uri, {
   serverApi: {
