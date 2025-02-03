@@ -6,9 +6,7 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  "";
-
+const uri =process.env.DATABASE;
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
