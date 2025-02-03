@@ -3,7 +3,7 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const cors = require("cors");
 const app = express();
 const port = 3000;
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const uri =process.env.DATABASE;
