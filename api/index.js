@@ -6,7 +6,7 @@ const port = 3000;
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-const uri =process.env.DATABASE;
+const uri ="";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -25,7 +25,21 @@ async function connectToMongoDB() {
 }
 
 connectToMongoDB();
+const database = client.db("MUN");
+const registrationsCollection = database.collection("Registrations");
+const upiCollection = database.collection("UPI_IDs");
 
+// Insert new UPI IDs
+app.post("/upi/add", async (req, res) => {
+  try {
+    const { upiData, recipient } = req.body;
+    const result = await upiCollection.insertOne({ upiData, recipient, count: 0 });
+    res.status(201).json({ message: "UPI ID added successfully", id: result.insertedId });
+  } catch (error) {
+    console.error("Error adding UPI ID:", error);
+    res.status(500).send("Error adding UPI ID");
+  }
+});
 app.get("/registrations", async (req, res) => {
   try {
     const database = client.db("MUN");
@@ -40,20 +54,40 @@ app.get("/registrations", async (req, res) => {
   }
 });
 
-app.post("/register", async (req, res) => {
+// Get an available UPI ID (count < 20)
+app.get("/upi/available", async (req, res) => {
   try {
-    const database = client.db("MUN");
-    const registrationsCollection = database.collection("Registrations");
-    const newRegistration = req.body;
-    const result = await registrationsCollection.insertOne(newRegistration);
-
-    res.status(201).json({
-      message: "Registration added successfully",
-      id: result.insertedId,
-    });
+    let upi = await upiCollection.findOne({ count: { $lt: 20 } });
+    
+    if (!upi) {
+      await upiCollection.updateMany({}, { $set: { count: 0 } });
+      upi = await upiCollection.findOne({});
+    }
+    
+    res.json(upi);
   } catch (error) {
-    console.error("Error adding registration:", error);
-    res.status(500).send("Error adding registration");
+    console.error("Error fetching UPI ID:", error);
+    res.status(500).send("Error fetching UPI ID");
   }
 });
-app.listen(port, () => {});
+
+// Register a new user and update UPI ID count
+app.post("/register", async (req, res) => {
+  try {
+    const registrationData = req.body;
+    const { upiData } = registrationData;
+    
+    const upi = await upiCollection.findOne({ upiData });
+    if (!upi) return res.status(400).send("UPI ID not found");
+    
+    await registrationsCollection.insertOne(registrationData);
+    await upiCollection.updateOne({ upiData}, { $inc: { count: 1 } });
+    
+    res.status(201).json({ message: "Registration successful" });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).send("Error registering user");
+  }
+});
+
+app.listen(port, () => console.log(`Server running on port ${port}`));
