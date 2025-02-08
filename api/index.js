@@ -41,6 +41,7 @@ function getCollections() {
   return {
     registrationsCollection: database.collection("Registrations"),
     upiCollection: database.collection("UPI_IDs"),
+    groupCollection: database.collection("Groups"),
   };
 }
 
@@ -107,6 +108,28 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ error: "Error registering user" });
   }
 });
+app.post("/groupregister", async (req, res) => {
+  try{
+    const registerdata = req.body;
+    const { groupCollection } = getCollections();
+    await groupCollection.insertOne(registerdata);
+    res.status(201).json({ message: "Group Registration successful" });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ error: "Error registering user" });
+  }
+});
+app.get("/groups", async (req, res) => {
+  try {
+    const { groupCollection } = getCollections();
+    const groups = await groupCollection.find({}).toArray();
+    res.json(groups);
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).json({ error: "Error fetching registrations" });
+  }
+});
+
 
 // 🔹 Handle Vercel's serverless functions
 module.exports = app;
